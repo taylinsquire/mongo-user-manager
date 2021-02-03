@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title User List
+  body
+    table
+      tr
+        th ID
+        th Name
+        th Email
+        th Age
+      each user in users
+        tr
+          td= user.userid
+          td= user.name
+          td= user.email
+          td= user.age
+          td
+            a(href=`/edit/${user.id}`) Edit
+    
