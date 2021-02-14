@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-const mongodb = require('mongodb');
 
 const mongoose = require('mongoose');
 const dbConnectionString = 'mongodb://localhost/userdb';
