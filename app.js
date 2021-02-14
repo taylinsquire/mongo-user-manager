@@ -13,7 +13,6 @@ udb.once('open', () => {
 });
 
 const userSchema = new mongoose.Schema({
-  // _id: Number,
   fname: String,
   lname: String,
   email: String,
@@ -32,9 +31,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/userlist', (req, res) => {
-  user.find({}, {}, {}, (err, data) => {
+  let sort = req.query.sort ? { sort: {lname:req.query.sort} } : {};
+  user.find({}, {}, sort, (err, data) => {
     if (err) throw err;
-    res.render('userList', { users: data });
+    res.render('userList', { users: data, currentUrl: req.url, queries: {} });
   });
 });
 
@@ -44,17 +44,17 @@ app.get('/searchusers', (req, res) => {
 
 app.get('/filter-user-list', (req, res) => {
   let searchFilter = {};
-  console.log(req.query, "hi");
+  let sort = req.query.sort ? { sort: {lname: req.query.sort} } : {};
   if (req.query.fname && req.query.lname) {
     searchFilter = { $and: [{ fname: req.query.fname }, { lname: req.query.lname }] };
   } else if (req.query.fname) {
     searchFilter = { fname: req.query.fname }
-  } else {
+  } else if (req.query.lname) {
     searchFilter = { lname: req.query.lname }
   }
-  user.find(searchFilter, {}, {}, (err, data) => {
+  user.find(searchFilter, {}, sort, (err, data) => {
     if (err) throw err;
-    res.render('userList', { users: data });
+    res.render('userList', { users: data, currentUrl: req.url, queries: req.query });
   });
 });
 
@@ -64,7 +64,6 @@ app.get('/new-user-form', (req, res) => {
 
 app.post('/new-user-form', (req, res) => {
   const newUser = new user();
-  // newUser._id = mongodb.ObjectID();
   newUser.fname = req.body.fname;
   newUser.lname = req.body.lname;
   newUser.email = req.body.email;

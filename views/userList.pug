@@ -4,6 +4,20 @@ block content
     a(href="/new-user-form") Create new user
   div
     a(href="/searchusers") Search
+  div
+    h4 Sort by last name
+    form(method="get" action=currentUrl)
+      each query, queryName in queries
+        - var notSort = (queryName != 'sort')
+        if notSort
+          input(type="hidden" name=queryName value=query)
+      label(for="asc") ascending
+      input(type="radio", name="sort" id="asc" value=1 selected)
+      label(for="desc") descending
+      input(type="radio", name="sort" id="desc" value=-1)
+      button(type="submit") Sort
+
+  br
   table
     tr
       th User ID
