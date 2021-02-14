@@ -1,22 +1,24 @@
-<!DOCTYPE html>
-html(lang="en")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title User List
-  body
-    table
+extend layout
+block content
+  div
+    a(href="/new-user-form") Create new user
+  div
+    a(href="/searchusers") Search
+  table
+    tr
+      th User ID
+      th First Name
+      th Last Name
+      th Email
+      th Age
+    each user in users
       tr
-        th ID
-        th Name
-        th Email
-        th Age
-      each user in users
-        tr
-          td= user.userid
-          td= user.name
-          td= user.email
-          td= user.age
-          td
-            a(href=`/edit/${user.id}`) Edit
-    
+        td= user._id
+        td= user.fname
+        td= user.lname
+        td= user.email
+        td= user.age
+        td
+          a(href=`/edit/${user._id}`) Edit
+        td
+          a(href=`/delete/${user._id}`) Delete

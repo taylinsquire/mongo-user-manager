@@ -1,6 +1,7 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
 const port = process.env.PORT || 3000;
-const fs = require('fs');
+const mongodb = require('mongodb');
 
 const mongoose = require('mongoose');
 const dbConnectionString = 'mongodb://localhost/userdb';
@@ -13,51 +14,90 @@ udb.once('open', () => {
 });
 
 const userSchema = new mongoose.Schema({
-  userid: Number,
-  name: String,
+  // _id: Number,
+  fname: String,
+  lname: String,
   email: String,
   age: { type: Number, min: 18, max: 70 },
 });
 
-const users = mongoose.model('user', userSchema);
+const user = mongoose.model('user', userSchema);
 
-const userstemp = [
-  {
-    id: 0,
-    name: 'Jim',
-    email: 'blah',
-    age: '25',
-  },
-  {
-    id: 1,
-    name: 'Jane',
-    email: 'blah',
-    age: '30',
-  },
-  {
-    id: 2,
-    name: 'Bob',
-    email: 'blah',
-    age: '60',
-  },
-];
+app.use(express.urlencoded({ extended: false }));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'pug');
 
 app.get('/', (req, res) => {
-  res.render('index');
+  res.redirect('/userlist');
 });
 
 app.get('/userlist', (req, res) => {
-  users.find({}, {}, {}, (err, data) => {
+  user.find({}, {}, {}, (err, data) => {
     if (err) throw err;
-    res.render('userList', {users: data});
-  })
+    res.render('userList', { users: data });
+  });
 });
 
-app.post('/newuser', (req, res) => {
-  res.render();
+app.get('/searchusers', (req, res) => {
+  res.render('searchForm');
+});
+
+app.get('/filter-user-list', (req, res) => {
+  let searchFilter = {};
+  console.log(req.query, "hi");
+  if (req.query.fname && req.query.lname) {
+    searchFilter = { $and: [{ fname: req.query.fname }, { lname: req.query.lname }] };
+  } else if (req.query.fname) {
+    searchFilter = { fname: req.query.fname }
+  } else {
+    searchFilter = { lname: req.query.lname }
+  }
+  user.find(searchFilter, {}, {}, (err, data) => {
+    if (err) throw err;
+    res.render('userList', { users: data });
+  });
+});
+
+app.get('/new-user-form', (req, res) => {
+  res.render('newUser');
+});
+
+app.post('/new-user-form', (req, res) => {
+  const newUser = new user();
+  // newUser._id = mongodb.ObjectID();
+  newUser.fname = req.body.fname;
+  newUser.lname = req.body.lname;
+  newUser.email = req.body.email;
+  newUser.age = req.body.age;
+  newUser.save((err, results) => {
+    if (err) throw err;
+    console.log('Document Saved');
+  });
+  res.redirect('/userlist');
+});
+
+app.get('/edit/:id', (req, res) => {
+  user.findOne({ _id: req.params.id }, {}, {}, (err, data) => {
+    if (err) throw err;
+    res.render('editUser', { user: data });
+  });
+});
+app.post('/edit/:id', (req, res) => {
+  user.updateOne(
+    { _id: req.params.id },
+    { fname: req.body.fname, lname: req.body.lname, email: req.body.email, age: req.body.age },
+    (err, results) => {
+      if (err) throw err;
+      res.redirect('/userlist');
+    }
+  );
+});
+
+app.get('/delete/:id', (req, res) => {
+  user.deleteOne({ _id: req.params.id }).then(() => {
+    res.redirect('/userlist');
+  });
 });
 
 app.listen(port, () => {
